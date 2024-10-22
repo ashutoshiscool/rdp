@@ -2,7 +2,6 @@
 FROM ubuntu:latest
 
 # Set environment variables
-ENV NGROK_AUTH_TOKEN=2aeX4cs4MTzYimDVm9pRpfMeg4R_7aVc58JpynJXGBZL4HTyg
 ENV ADMIN_USER=reabillaw
 ENV ADMIN_PASSWORD=test
 
@@ -18,8 +17,8 @@ RUN wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-linux-amd64.zip \
     && mv ngrok /usr/local/bin/ \
     && rm ngrok-stable-linux-amd64.zip
 
-# Authenticate ngrok with your token
-RUN ngrok authtoken $NGROK_AUTH_TOKEN
+# Add ngrok authtoken
+RUN ngrok config add-authtoken 2aeX4cs4MTzYimDVm9pRpfMeg4R_7aVc58JpynJXGBZL4HTyg
 
 # Switch to the admin user
 USER $ADMIN_USER
