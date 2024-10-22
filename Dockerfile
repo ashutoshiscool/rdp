@@ -1,30 +1,17 @@
-# Use an official Ubuntu base image
-FROM ubuntu:latest
+# Use the base Dockerfile from the repo as a starting point
+FROM dockur/windows:latest
 
-# Set environment variables
-ENV ADMIN_USER=reabillaw
-ENV ADMIN_PASSWORD=test
+# Set environment variables for cloudflared tunnel
+ENV TUNNEL_TOKEN=eyJhIjoiNDE1NTQyNmYwYzExYWE3MDA2NjBhZDFmMmQ5MzcwYWUiLCJ0IjoiZjM0MTRjOWYtNTc1MC00Zjg4LWFmNDUtZGY3ZmQ2YmEwZmI4IiwicyI6Ik1XRTFOamxsTXpVdE5EUTVNeTAwTTJFekxUazNOall0T1RJeE1qQXlOVGt5WXpoayJ9
 
-# Install necessary dependencies
-RUN apt-get update && apt-get install -y wget curl unzip sudo
+# Download and install cloudflared in Windows environment
+RUN powershell.exe -Command \
+    Invoke-WebRequest -Uri https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe -OutFile cloudflared.exe; \
+    Move-Item -Path cloudflared.exe -Destination C:\\cloudflared.exe
 
-# Create admin user and set password
-RUN useradd -m $ADMIN_USER && echo "$ADMIN_USER:$ADMIN_PASSWORD" | chpasswd && usermod -aG sudo $ADMIN_USER
+# Expose necessary ports (e.g., 80 for HTTP, 3389 for RDP)
+EXPOSE 80
+EXPOSE 3389
 
-# Download and install ngrok
-RUN wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-linux-amd64.zip \
-    && unzip ngrok-stable-linux-amd64.zip \
-    && mv ngrok /usr/local/bin/ \
-    && rm ngrok-stable-linux-amd64.zip
-
-# Add ngrok authtoken
-RUN ngrok config add-authtoken 2aeX4cs4MTzYimDVm9pRpfMeg4R_7aVc58JpynJXGBZL4HTyg
-
-# Switch to the admin user
-USER $ADMIN_USER
-
-# Expose ngrok HTTP and TCP tunnels
-EXPOSE 4040 22 80
-
-# Set the default command to run ngrok http
-CMD ["ngrok", "http", "80"]
+# Set cloudflared tunnel to run when the container starts
+CMD ["C:\\cloudflared.exe", "tunnel", "--no-autoupdate", "run", "--token", "$env:TUNNEL_TOKEN"]
